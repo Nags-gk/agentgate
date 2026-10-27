@@ -24,8 +24,9 @@ export async function bootstrapDemoTraffic(): Promise<void> {
   } catch {
     /* no LLM report checked in yet */
   }
-  const exists = await q1("SELECT 1 FROM agents WHERE name = 'triage-bot'");
-  if (exists) return;
+  // The last agent in the list marks a completed bootstrap; a partial one is finished on next boot.
+  const done = await q1("SELECT 1 FROM agents WHERE name = 'incident-scribe'");
+  if (done) return;
   for (const [agentName, id] of DEMO_TRAFFIC) {
     const s = SCENARIOS.find((x) => x.id === id);
     if (s) await runScenario(s, "gateway", "scripted", { agentName });

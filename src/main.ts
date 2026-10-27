@@ -16,10 +16,14 @@ import { bootstrapDemoTraffic } from "./demo.js";
  * can take a while. Until init finishes, every request gets 503 with the current step.
  */
 let ready: ReturnType<typeof buildApp> | undefined;
+let healthy = false;
 let step = "starting";
 let failure: string | undefined;
 
 const gate = new Hono();
+// /health stays 503 until the demo history exists too: Cloud Run's startup probe keeps CPU
+// allocated until it passes, so first-boot work finishes instead of being throttled.
+gate.get("/health", (c) => (ready && healthy ? ready.fetch(c.req.raw, c.env) : c.json({ ok: false, starting: step, error: failure }, 503)));
 gate.all("*", (c) => {
   if (ready) return ready.fetch(c.req.raw, c.env);
   return c.json({ ok: false, starting: step, error: failure }, 503);
@@ -56,8 +60,12 @@ async function init() {
   at("starting sandboxed MCP servers");
   await startConnectors();
   ready = buildApp();
+  if (config.demo) {
+    at("generating demo history");
+    await bootstrapDemoTraffic().catch((e) => console.error("demo traffic failed", e));
+  }
+  healthy = true;
   at("ready");
-  if (config.demo) bootstrapDemoTraffic().catch((e) => console.error("demo traffic failed", e));
 }
 
 // Retry init with backoff instead of crashing: a database hiccup at boot should not take the

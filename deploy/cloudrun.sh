@@ -57,6 +57,7 @@ echo "Building and deploying (Cloud Build, about 4 minutes)..."
 gcloud run deploy "$SERVICE" --source . --region "$REGION" --service-account "$SA" \
   --allow-unauthenticated --port 8080 --cpu 1 --memory 1Gi \
   --min-instances 0 --max-instances 1 --concurrency 80 --timeout 300 \
+  --startup-probe httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,periodSeconds=5,timeoutSeconds=3,failureThreshold=60 \
   --set-env-vars "PUBLIC_URL=${URL},DEMO_MODE=true,DB_POOL_SIZE=8" \
   --set-secrets "DATABASE_URL=agentgate-database-url:latest,VAULT_KEKS=agentgate-vault-keks:latest" \
   "${GEMINI_FLAG[@]}"

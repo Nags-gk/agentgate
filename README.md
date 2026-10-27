@@ -4,7 +4,7 @@
 
 **An MCP gateway that lets AI agents use company tools without inheriting their user's keys.**
 
-**Live demo: LIVE_URL** (simulated GitHub, Slack and Jira; one-click demo accounts)
+**Live demo: https://agentgate-168677209514.us-central1.run.app** (simulated GitHub, Slack and Jira; one-click demo accounts)
 
 An agent that holds a user's GitHub, Slack and Jira tokens can do everything that user can, and so can anyone who leaks that token or slips instructions into a ticket the agent reads. AgentGate sits between agents and those systems:
 
@@ -89,12 +89,12 @@ flowchart LR
 
 ## Use it
 
-**Claude Code:** `claude mcp add --transport http agentgate LIVE_URL/mcp`, then `/mcp` to sign in. Pick `dana@acme.test` / `agentgate-demo` and a bundle.
+**Claude Code:** `claude mcp add --transport http agentgate https://agentgate-168677209514.us-central1.run.app/mcp`, then `/mcp` to sign in. Pick `dana@acme.test` / `agentgate-demo` and a bundle.
 
 **Unattended agent:** create one on the Agents page, then:
 
 ```bash
-curl -u CLIENT_ID:CLIENT_SECRET -d grant_type=client_credentials LIVE_URL/oauth/token
+curl -u CLIENT_ID:CLIENT_SECRET -d grant_type=client_credentials https://agentgate-168677209514.us-central1.run.app/oauth/token
 ```
 
 ## Run it locally
