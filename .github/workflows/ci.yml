@@ -37,9 +37,11 @@ jobs:
       - name: Docker image builds
         run: docker build -t agentgate:ci .
       - name: Container starts and becomes healthy (production dependencies only)
+        # Fresh database: earlier steps sealed signing keys with a different vault key.
         run: |
+          docker exec crdb ./cockroach sql --insecure -e "CREATE DATABASE container_check"
           docker run -d --name ag --network host -e PORT=8099 -e PUBLIC_URL=http://127.0.0.1:8099 \
-            -e DATABASE_URL=postgresql://root@127.0.0.1:26257/defaultdb?sslmode=disable \
+            -e DATABASE_URL=postgresql://root@127.0.0.1:26257/container_check?sslmode=disable \
             -e VAULT_KEKS="1:$(head -c 32 /dev/urandom | base64)" agentgate:ci
           for i in $(seq 1 60); do curl -fs http://127.0.0.1:8099/healthz && exit 0; sleep 2; done
           docker logs ag; exit 1
