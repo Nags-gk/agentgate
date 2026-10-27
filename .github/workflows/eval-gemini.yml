@@ -1,0 +1,40 @@
+name: eval-gemini
+# Runs the red-team scenarios with a real Gemini agent and commits eval/results/gemini.json.
+# Needs the repository secret GEMINI_API_KEY (free tier is enough).
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "Gemini model id (blank = newest Flash)"
+        default: ""
+permissions:
+  contents: write
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start CockroachDB
+        run: |
+          docker run -d --name crdb -p 26257:26257 cockroachdb/cockroach:v25.2.0 start-single-node --insecure
+          for i in $(seq 1 60); do docker exec crdb ./cockroach sql --insecure -e "select 1" >/dev/null 2>&1 && break; sleep 1; done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run Gemini agent through and around the gateway
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DATABASE_URL: postgresql://root@localhost:26257/defaultdb?sslmode=disable
+          PORT: "8790"
+          MODEL: ${{ inputs.model }}
+        run: npx tsx eval/redteam.ts --agent gemini ${MODEL:+--model "$MODEL"} | tee gemini.txt
+      - name: Commit results
+        run: |
+          { echo '### Gemini red-team run'; echo '```'; cat gemini.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          git config user.name "agentgate-eval"
+          git config user.email "actions@users.noreply.github.com"
+          git add eval/results/gemini.json
+          git diff --cached --quiet || (git commit -m "eval: Gemini red-team results" && git push)

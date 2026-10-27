@@ -1,0 +1,259 @@
+@import "@fontsource-variable/instrument-sans";
+@import "@fontsource-variable/jetbrains-mono";
+
+:root {
+  --paper: #edf0ec;
+  --surface: #f8f9f6;
+  --raised: #ffffff;
+  --ink: #1a2125;
+  --ink-2: #4b565c;
+  --ink-3: #75808a;
+  --line: #d3d9d4;
+  --line-2: #e2e7e2;
+  --harbor: #24506b;
+  --harbor-ink: #f4f7f8;
+  --harbor-soft: #dbe7ee;
+  --pass: #2d7a57;
+  --pass-soft: #dcefe5;
+  --stop: #b03a2e;
+  --stop-soft: #f6e0dc;
+  --flag: #a86e12;
+  --flag-soft: #f5e9cf;
+  --focus: #2f7fb5;
+  --sans: "Instrument Sans Variable", "Instrument Sans", system-ui, sans-serif;
+  --mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #14181b;
+    --surface: #1a1f23;
+    --raised: #20262b;
+    --ink: #e6ebe7;
+    --ink-2: #b0bab7;
+    --ink-3: #85908f;
+    --line: #313a40;
+    --line-2: #272e33;
+    --harbor: #7fb2d3;
+    --harbor-ink: #10161a;
+    --harbor-soft: #1f3442;
+    --pass: #6ccb9c;
+    --pass-soft: #1d3329;
+    --stop: #f08a7c;
+    --stop-soft: #3a2220;
+    --flag: #e6b356;
+    --flag-soft: #3a2f19;
+    --focus: #8cc7ee;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.55 var(--sans);
+  font-feature-settings: "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--harbor); text-underline-offset: 2px; }
+code, pre, .mono { font-family: var(--mono); font-size: 0.86em; }
+pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
+h1 { font-size: 1.75rem; line-height: 1.2; font-weight: 640; letter-spacing: -0.015em; margin: 0 0 0.4rem; }
+h2 { font-size: 1.15rem; line-height: 1.3; font-weight: 620; margin: 2rem 0 0.75rem; }
+h3 { font-size: 1rem; font-weight: 620; margin: 0 0 0.5rem; }
+p { margin: 0 0 0.9rem; max-width: 72ch; }
+.lede { color: var(--ink-2); font-size: 1.02rem; }
+.muted { color: var(--ink-3); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ---------------------------------------------------------------- shell */
+.shell { display: grid; grid-template-columns: 228px 1fr; min-height: 100%; }
+.rail {
+  border-right: 1px solid var(--line);
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 680; font-size: 1.05rem; padding: 4px 10px 18px; }
+.brand svg { width: 26px; height: 26px; }
+.rail a {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 7px;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.rail a:hover { background: var(--line-2); color: var(--ink); }
+.rail a[aria-current="page"] { background: var(--harbor-soft); color: var(--ink); font-weight: 600; }
+.rail .sep { height: 1px; background: var(--line); margin: 12px 10px; }
+.rail .who { margin-top: auto; padding: 10px; font-size: 0.85rem; color: var(--ink-3); }
+.rail .who button { margin-top: 6px; }
+main.page { padding: 36px 44px 80px; max-width: 1180px; min-width: 0; }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail { position: static; height: auto; flex-direction: row; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--line); padding: 10px 12px; }
+  .brand { padding: 4px 8px; width: 100%; }
+  .rail .sep, .rail .who { display: none; }
+  main.page { padding: 24px 16px 60px; }
+}
+
+/* ---------------------------------------------------------------- controls */
+button, .btn {
+  font: 600 0.9rem var(--sans);
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--raised);
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+button:hover { border-color: var(--ink-3); }
+button.primary { background: var(--harbor); color: var(--harbor-ink); border-color: var(--harbor); }
+button.primary:hover { filter: brightness(1.08); }
+button:disabled { opacity: 0.55; cursor: default; }
+button.small { padding: 4px 10px; font-size: 0.82rem; border-radius: 6px; }
+input, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+textarea { font-family: var(--mono); font-size: 0.82rem; width: 100%; min-height: 280px; }
+label.field { display: grid; gap: 4px; font-size: 0.85rem; font-weight: 600; color: var(--ink-2); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.spread { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+
+/* ---------------------------------------------------------------- panels and tables */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+.panel + .panel { margin-top: 14px; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+.split > .panel { margin-top: 0; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th { text-align: left; font-weight: 600; color: var(--ink-3); font-size: 0.8rem; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+td { padding: 9px 10px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+tr.click { cursor: pointer; }
+tr.click:hover td { background: var(--line-2); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------------------- the gate ledger (signature) */
+.ledger { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.ledger li {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-2);
+}
+.ledger .what { min-width: 0; }
+.ledger .tool { font-family: var(--mono); font-size: 0.85rem; color: var(--ink); }
+.ledger .res { color: var(--ink-3); font-size: 0.85rem; margin-left: 8px; }
+.ledger .why { color: var(--ink-2); font-size: 0.9rem; margin-top: 2px; }
+.ledger .detail { margin-top: 8px; padding: 10px 12px; background: var(--raised); border: 1px solid var(--line-2); border-radius: 8px; font-size: 0.8rem; max-height: 220px; overflow: auto; }
+
+/* A stamp is the gate's verdict: rotated slightly, framed, like a passport mark. */
+.stamp {
+  justify-self: start;
+  align-self: start;
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  padding: 3px 8px;
+  border: 1.5px solid currentColor;
+  border-radius: 4px;
+  transform: rotate(-2deg);
+  white-space: nowrap;
+}
+.stamp.pass { color: var(--pass); background: var(--pass-soft); }
+.stamp.stop { color: var(--stop); background: var(--stop-soft); transform: rotate(2deg); }
+.stamp.flag { color: var(--flag); background: var(--flag-soft); }
+.stamp.plain { color: var(--ink-3); background: transparent; transform: none; }
+.stamp.big { font-size: 0.95rem; padding: 5px 12px; }
+
+.chip { display: inline-block; font-size: 0.78rem; padding: 1px 7px; border-radius: 4px; background: var(--line-2); color: var(--ink-2); margin: 2px 4px 2px 0; }
+.chip.code { font-family: var(--mono); font-size: 0.75rem; }
+.level-public { background: var(--harbor-soft); color: var(--harbor); }
+.level-internal { background: var(--line-2); color: var(--ink-2); }
+.level-confidential { background: var(--flag-soft); color: var(--flag); }
+.level-restricted { background: var(--stop-soft); color: var(--stop); }
+
+.note { padding: 10px 14px; border-radius: 8px; border-left: 3px solid var(--harbor); background: var(--harbor-soft); margin: 12px 0; font-size: 0.92rem; }
+.note.bad { border-color: var(--stop); background: var(--stop-soft); }
+.note.good { border-color: var(--pass); background: var(--pass-soft); }
+.secret { font-family: var(--mono); font-size: 0.82rem; padding: 8px 10px; background: var(--raised); border: 1px dashed var(--flag); border-radius: 6px; word-break: break-all; }
+
+/* ---------------------------------------------------------------- summary sentence + chart */
+.summary { font-size: 1.35rem; line-height: 1.45; font-weight: 520; letter-spacing: -0.01em; max-width: 46ch; margin: 6px 0 22px; }
+.summary b { font-weight: 700; }
+.summary .s-stop { color: var(--stop); }
+.summary .s-pass { color: var(--pass); }
+.bars { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding-top: 8px; }
+.bars .col { flex: 1; display: flex; flex-direction: column-reverse; min-width: 4px; }
+.bars .a { background: var(--pass); opacity: 0.75; border-radius: 2px 2px 0 0; }
+.bars .d { background: var(--stop); border-radius: 2px 2px 0 0; }
+.axis { display: flex; justify-content: space-between; color: var(--ink-3); font-size: 0.75rem; margin-top: 6px; }
+
+/* ---------------------------------------------------------------- playground */
+.versus { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+@media (max-width: 960px) { .versus { grid-template-columns: 1fr; } }
+.versus .side { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; background: var(--surface); }
+.versus .side.gate { border-color: var(--harbor); box-shadow: inset 0 3px 0 var(--harbor); }
+.outcome { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.writes { list-style: none; padding: 0; margin: 8px 0 0; font-size: 0.85rem; }
+.writes li { padding: 6px 0; border-top: 1px solid var(--line-2); }
+
+/* ---------------------------------------------------------------- blast radius */
+.radius { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.radius .side { padding: 16px; border-radius: 12px; border: 1px solid var(--line); }
+.radius .side.raw { background: var(--stop-soft); border-color: transparent; }
+.radius .side.scoped { background: var(--pass-soft); border-color: transparent; }
+.radius .count { font-size: 2.2rem; font-weight: 700; line-height: 1; }
+.radius dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 12px 0 0; font-size: 0.88rem; }
+.radius dt { color: var(--ink-2); }
+.radius dd { margin: 0; }
+
+/* ---------------------------------------------------------------- traces */
+.wf { position: relative; height: 20px; margin: 2px 0; }
+.wf .bar { position: absolute; top: 3px; height: 14px; border-radius: 3px; background: var(--harbor); opacity: 0.8; }
+.wf .bar.err { background: var(--stop); }
+.wf .lbl { position: absolute; top: 0; font-size: 0.75rem; font-family: var(--mono); white-space: nowrap; color: var(--ink-2); }
+
+/* ---------------------------------------------------------------- login */
+.gatepage { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr); }
+.gatepage .story { padding: 64px 56px; display: flex; flex-direction: column; justify-content: center; gap: 18px; }
+.gatepage .story h1 { font-size: 2.6rem; max-width: 15ch; line-height: 1.08; letter-spacing: -0.025em; }
+.gatepage .signin { background: var(--surface); border-left: 1px solid var(--line); padding: 64px 44px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+.demo-list { display: grid; gap: 8px; }
+.demo-list button { justify-content: space-between; width: 100%; text-align: left; }
+.demo-list span.role { color: var(--ink-3); font-weight: 500; }
+.sample { margin-top: 10px; max-width: 520px; }
+@media (max-width: 900px) {
+  .gatepage { grid-template-columns: 1fr; }
+  .gatepage .story { padding: 36px 20px 12px; }
+  .gatepage .story h1 { font-size: 2rem; }
+  .gatepage .signin { border-left: 0; border-top: 1px solid var(--line); padding: 28px 20px 48px; }
+}
+
+/* Long JSON and identifiers must wrap on small screens. */
+.ledger .why, .ledger code, .writes, .writes code, .detail pre { overflow-wrap: anywhere; }
+.versus .side, .panel, .split > * { min-width: 0; }
+label.field { min-width: 0; max-width: 100%; }
+select { max-width: 100%; text-overflow: ellipsis; }
+label.field > select, label.field > input { width: 100%; min-width: 0; }

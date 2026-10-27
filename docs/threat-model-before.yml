@@ -1,0 +1,34 @@
+name: AgentGate (as built)
+description: >
+  MCP gateway on Cloud Run. AI clients (Claude, Cursor, service agents) authenticate with OAuth 2.1
+  and call scoped tools; the gateway decrypts upstream credentials from its vault per call and talks
+  to GitHub, Slack and Jira, or to third-party MCP servers in a local sandbox. State, policy and the
+  hash-chained audit log live in CockroachDB.
+zones: {internet: 0, sandbox: 1, gcp_app: 3, managed_db: 4, saas: 2, gcp_managed: 3}
+components:
+  - {id: ai_client, type: client, zone: internet}
+  - {id: admin_ui, type: admin_console, zone: internet}
+  - {id: gateway, type: gateway, zone: gcp_app, internet_facing: true, handles: [login, object_api, admin],
+     data: [credentials, secrets, logs],
+     controls: [rate_limit, input_validation, authz, generic_errors, non_root, secret_manager, audit_logging, security_logging,
+                opaque_ids, least_privilege_iam, key_rotation, data_minimization, anomaly_detection]}
+  - {id: oauth_server, type: identity_provider, zone: gcp_app, internet_facing: true, handles: [login],
+     data: [credentials], controls: [rate_limit, authz, generic_errors, non_root, secret_manager, security_logging]}
+  - {id: sandboxed_mcp, type: third_party, zone: sandbox, controls: [non_root, least_privilege_iam]}
+  - {id: saas_apis, type: third_party, zone: saas}
+  - {id: cockroachdb, type: datastore, zone: managed_db, data: [credentials, secrets, logs, pii],
+     controls: [encryption_at_rest, access_logging, authz], iam: least_privilege}
+  - {id: audit_log, type: log_sink, zone: managed_db, data: [logs], log_retention_days: 90,
+     controls: [log_integrity, encryption_at_rest]}
+  - {id: secret_manager, type: datastore, zone: gcp_managed, data: [secrets], controls: [encryption_at_rest, access_logging, key_rotation], iam: least_privilege}
+flows:
+  - {id: f_mcp, from: ai_client, to: gateway, protocol: https, auth: oauth2, data: [telemetry]}
+  - {id: f_oauth, from: ai_client, to: oauth_server, protocol: https, auth: password, data: [credentials]}
+  - {id: f_admin, from: admin_ui, to: gateway, protocol: https, auth: session, data: [logs, pii]}
+  - {id: f_upstream, from: gateway, to: saas_apis, protocol: https, auth: api_key, data: [secrets, telemetry]}
+  - {id: f_sandbox, from: gateway, to: sandboxed_mcp, protocol: internal_tls, auth: none, data: [telemetry]}
+  - {id: f_db, from: gateway, to: cockroachdb, protocol: sql_tls, auth: password, data: [credentials, secrets, logs]}
+  - {id: f_audit, from: gateway, to: audit_log, protocol: sql_tls, auth: password, data: [logs]}
+  - {id: f_kek, from: gateway, to: secret_manager, protocol: https, auth: workload_identity, data: [secrets]}
+accepted_risks:
+  - {rule: TL-S01, element: f_sandbox, reason: "stdio pipe to a child process on the same host; isolation comes from the Node permission model and egress guard, not from network auth", owner: nagsgk}

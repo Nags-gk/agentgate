@@ -1,0 +1,38 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start CockroachDB
+        run: |
+          docker run -d --name crdb -p 26257:26257 cockroachdb/cockroach:v25.2.0 start-single-node --insecure
+          for i in $(seq 1 60); do docker exec crdb ./cockroach sql --insecure -e "select 1" >/dev/null 2>&1 && break; sleep 1; done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+      - run: npm ci
+      - run: npm ci --prefix web
+      - run: npm run typecheck
+      - run: npm run build --prefix web
+      - name: Unit and integration tests (real CockroachDB)
+        run: npm test
+      - name: Red-team suite (worst-case scripted agent)
+        env:
+          DATABASE_URL: postgresql://root@localhost:26257/defaultdb?sslmode=disable
+          PORT: "8790"
+        run: |
+          npx tsx eval/redteam.ts | tee redteam.txt
+          { echo '### Red-team suite'; echo '```'; cat redteam.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Docker image builds
+        run: docker build -t agentgate:ci .
