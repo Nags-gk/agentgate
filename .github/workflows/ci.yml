@@ -36,3 +36,10 @@ jobs:
           { echo '### Red-team suite'; echo '```'; cat redteam.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Docker image builds
         run: docker build -t agentgate:ci .
+      - name: Container starts and becomes healthy (production dependencies only)
+        run: |
+          docker run -d --name ag --network host -e PORT=8099 -e PUBLIC_URL=http://127.0.0.1:8099 \
+            -e DATABASE_URL=postgresql://root@127.0.0.1:26257/defaultdb?sslmode=disable \
+            -e VAULT_KEKS="1:$(head -c 32 /dev/urandom | base64)" agentgate:ci
+          for i in $(seq 1 60); do curl -fs http://127.0.0.1:8099/healthz && exit 0; sleep 2; done
+          docker logs ag; exit 1
