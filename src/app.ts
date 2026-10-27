@@ -30,7 +30,8 @@ export function buildApp() {
       );
   });
 
-  app.get("/healthz", async (c) => {
+  // Cloud Run's front end reserves paths ending in "z" (it answers /healthz itself with 404), so the probe is /health.
+  app.get("/health", async (c) => {
     try {
       await db().query("SELECT 1");
       return c.json({ ok: true });

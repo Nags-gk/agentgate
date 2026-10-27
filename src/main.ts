@@ -61,7 +61,7 @@ async function init() {
 }
 
 // Retry init with backoff instead of crashing: a database hiccup at boot should not take the
-// service into a restart loop, and the error stays visible at /healthz.
+// service into a restart loop, and the error stays visible at /health.
 (async () => {
   for (let attempt = 1; !ready; attempt++) {
     try {

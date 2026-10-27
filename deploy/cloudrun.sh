@@ -3,6 +3,7 @@
 #
 #   git clone https://github.com/Nags-gk/agentgate && cd agentgate
 #   PROJECT=project-security-512220 bash deploy/cloudrun.sh
+#   NEW_DB_URL=1 PROJECT=... bash deploy/cloudrun.sh    # replace a stored connection string
 #
 # Asks once for the CockroachDB Cloud connection string (input hidden) and stores it, a
 # freshly generated vault key and, optionally, a Gemini key in Secret Manager. Nothing
@@ -26,7 +27,7 @@ secret() { # name, value-from-stdin
   fi
 }
 
-if ! gcloud secrets describe agentgate-database-url >/dev/null 2>&1; then
+if [[ -n "${NEW_DB_URL:-}" ]] || ! gcloud secrets describe agentgate-database-url >/dev/null 2>&1; then
   read -rsp "CockroachDB Cloud connection string (postgresql://...): " DBURL; echo
   [[ "$DBURL" == postgresql://* ]] || { echo "That does not look like a connection string."; exit 1; }
   [[ "$DBURL" == *sslmode=* ]] || DBURL="${DBURL}$([[ "$DBURL" == *\?* ]] && echo '&' || echo '?')sslmode=verify-full"
@@ -62,4 +63,4 @@ gcloud run deploy "$SERVICE" --source . --region "$REGION" --service-account "$S
 
 echo
 echo "Deployed: ${URL}"
-curl -fsS "${URL}/healthz" && echo
+curl -fsS "${URL}/health" && echo
